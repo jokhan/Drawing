@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>图样绘制</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="shortcut icon" href="./imgs/ico.png" />
+<link rel="stylesheet" href="./bootstrap/css/bootstrap.css" media="screen">
+<link rel="stylesheet" type="text/css" href="./css/drawing.css" media="screen">
+<link rel="stylesheet" type="text/css" href="./css/drawing-responsive.css" media="screen">
+<link rel="stylesheet" type="text/css" href="./css/method-draw.compiled.css" media="screen">
+
+ <style>
+     canvas {
+       cursor: pointer;
+       border: 1px solid black;
+       background-color: white; 
+     }
+     
+ </style>
+
+</head>  
+<body style="background-color:#444;">
+<link rel='stylesheet' href='./css/spectrum.css' />
+  <div id="workarea" style="overflow: scroll; line-height: 598px;" class="select" >
+    <canvas id="canvas" width="600" height="600">
+    </canvas>
+  </div>
+
+  <div id="tools_left" class="tools_panel">
+    <div class="tool" align="center">
+      <button id="jokhanClear" style="background-image:url(./icos/tool-button-clear.png);width:40px;height:45px;    background-size: 80% 80%; background-repeat: no-repeat;" onclick="clearCanvas()"></button>
+      <button id="jokhanPointer" style="background-image:url(./icos/tool-button-point.png);width:40px;height:45px;    background-size: 80% 80%; background-repeat: no-repeat;" onclick="stopDrawing()"></button>
+      <button id="jokhanLine" style="background-image:url(./icos/tool-button-line.png);width:40px;height:45px;    background-size: 80% 80%; background-repeat: no-repeat;" onclick="actLine()"></button>
+      <button id="jokhanCircle" style="background-image:url(./icos/tool-button-circle.png);width:40px;height:45px; background-size: 80% 80%; background-repeat: no-repeat;" onclick="actCircle()"></button>
+      <button id="jokhanRect" style="background-image:url(./icos/tool-button-rect.png);width:40px;height:45px;    background-size: 80% 80%; background-repeat: no-repeat;" onclick="actRectangle()"></button>
+      <button id="jokhanTile" style="background-image:url(./icos/tool-button-tile.png);width:40px;height:45px;    background-size: 80% 80%; background-repeat: no-repeat;" onclick="actTiles()"></button>
+      <button id="jokhanDel" style="background-image:url(./icos/tool-button-del2.png);width:40px;height:45px;    background-size: 80% 80%; background-repeat: no-repeat;" onclick="actDel()"></button>
+      <button id="jokhanFinish" style="background-image:url(./icos/tool-button-submit.png);width:40px;height:45px;    background-size: 80% 80%; background-repeat: no-repeat;" onclick="finishDrawing()"></button>
+      <div><br><input type="color" id="custom" /> </div>
+      
+      <!--<a href="avascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-save',plain:true" onclick="uploadFile()"></a>
+      <input type="file" name="fileToUpload" id="fileToUpload" onchange="fileSelected()" style="width:250px"> -->
+      <!--<div id="result"></div>--> 
+    </div>
+  </div>
+
+  <div id="tools_top" class="tools_panel" align="center">
+  <br>
+    <div style="background-color: rgb(51, 122, 183);">
+      <div><input type="file" id="jokhanFileInput" class="filestyle" data-input="false"></div>
+      <div><button type="button" id="jokhanAddGrain" style="width:82px;height:34px;" class="btn btn-primary" onclick="addGrain()">撒上碎石</button></div>
+      <!--<div style="color:white">i have a dream.</div> -->
+    </div>
+  </div>
+  
+
+<!--<script src="bootstrap/js/jquery.min.js"></script> -->
+<script src="js/environment/jquery-1.11.2.min.js"</script>
+<script src="bootstrap/js/bootstrap.min.js"></script> 
+<script type="text/javascript" src="./bootstrap/js/bootstrap-filestyle.min.js"> </script>
+<script src='./js/color/spectrum.js'></script>
+<script src='./js/color/FileSaver.js'></script>
+<script language="JavaScript" src="./js/jokhanCanvas.js"></script>
+
+<script>
+        $("#custom").spectrum({
+          change: function(color) { },
+          move: function(color) {
+            //var c = $('#custom').spectrum('get');
+            actGetColor(color);
+            //console.log(c.toHexString()); // #ff0000
+},
+          color: "#000",
+          showInput: true,
+          showPalette: true,
+          showSelectionPalette: true,
+          palette: [ ],
+          localStorageKey: "spectrum.homepage",
+          chooseText: "选择",
+          cancelText: "取消 ",
+          preferredFormat: "rgb",
+
+          //replacerClassName: "awesome",
+          //maxSelectionSize: 8,
+});
+        /*
+        //$('div').click('[class=sp-top sp-cf]',function(e){
+        $('div').change('[class=sp-preview-inner]',function(e){
+          var c =  $('#custom').spectrum('get');
+          console.log("click");
+          actGetColor( c );
+          //e.stopPropagation();
+        });
+        */
+        $(":file").filestyle({
+          input: false,
+          icon: false,
+          buttonText: "导入图片",
+          buttonName: "btn-primary",
+          badge: false
+        });
+
+        
+</script>
+<script>
+        var result = document.getElementById("result"); 
+        var input = document.getElementById("jokhanFileInput"); 
+         
+        if(typeof FileReader==='undefined'){ 
+            result.innerHTML = "抱歉，你的浏览器不支持 FileReader"; 
+            input.setAttribute('disabled','disabled'); 
+        }else{ 
+            input.addEventListener('change',readFile,false); 
+        }
+
+        function readFile(){ 
+            var file = this.files[0]; 
+            if(!/image\/\w+/.test(file.type)){ 
+                alert("文件必须为图片！"); 
+                return false; 
+            } 
+            var reader = new FileReader(); 
+            var imgSrc = reader.readAsDataURL(file); 
+            reader.onload = function(e){ 
+                //console.log( this.result );
+                actLoadImage( this.result );
+                //result.innerHTML = '<img src="'+this.result+'" alt=""/>';
+            } 
+        }
+</script>
+
+</body>
+</html>
